@@ -1,5 +1,6 @@
 # Importando as bibliotecas necessárias
 from flask import Flask, request
+from flask_cors import CORS
 import pandas as pd
 import nltk
 from nltk.stem.porter import PorterStemmer
@@ -15,6 +16,8 @@ nltk.download('stopwords')
 
 # Inicializando o aplicativo Flask
 app = Flask(__name__)
+CORS(app)
+
 
 # Definindo as funções auxiliares
 def clean(text):
@@ -28,12 +31,15 @@ def clean(text):
     clean_text = lemm_text
     return ' '.join(word for word in clean_text)
 
+
 def extract_postags(text):
     tokens = nltk.word_tokenize(text)
     return [tag for word, tag in nltk.pos_tag(tokens)]
 
+
 def join_postags(postags):
     return ' '.join(postags)
+
 
 # Definindo a rota de previsão
 @app.route('/predict', methods=['GET'])
@@ -46,7 +52,8 @@ def classify_text():
     text_postags = clean_text + ' ' + postags_str
     X_final = tfid.transform([text_postags])
     prediction = random_forest_classifier.predict(X_final)
-    return f'Sentiment: {prediction}'
+    return f'sentiment:{prediction[0]}'
+
 
 # Função para treinar o modelo
 def train_model():
@@ -79,6 +86,7 @@ def train_model():
     # Treinando o modelo
     random_forest_classifier = RandomForestClassifier()
     random_forest_classifier.fit(X_train, y_train.values.ravel())
+
 
 # Treinando o modelo
 train_model()
